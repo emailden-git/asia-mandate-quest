@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 
 export default function SimulatorPage() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<
+  { role: "user" | "assistant"; content: string }[]
+>([]);
   const [input, setInput] = useState("");
   const [persona, setPersona] = useState(null);
   const [engagement, setEngagement] = useState(100);
