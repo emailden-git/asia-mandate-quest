@@ -18,8 +18,10 @@ export default function SimulatorPage() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { role: "user", content: input }];
-    setMessages(newMessages);
+const newMessages: { role: "user" | "assistant"; content: string }[] = [
+  ...messages,
+  { role: "user", content: input },
+];    setMessages(newMessages);
     setInput("");
     setLoading(true);
 
