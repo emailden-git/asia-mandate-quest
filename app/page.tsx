@@ -88,10 +88,7 @@ export default function Home() {
   }
 
   function resetSimulation() {
-    const confirmReset = window.confirm(
-      "Do you really wish to restart?"
-    );
-    if (!confirmReset) return;
+    if (!confirm("Restart simulation?")) return;
 
     setMessages([]);
     setMessage("");
@@ -103,54 +100,47 @@ export default function Home() {
   }
 
   function engagementColor() {
-    if (engagement > 60) return "bg-emerald-500";
-    if (engagement > 30) return "bg-amber-500";
-    return "bg-red-500";
+    if (engagement > 60) return "bg-green-500";
+    if (engagement > 30) return "bg-yellow-500";
+    return "bg-red-600";
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-black text-gray-200 px-6 py-8">
+      <div className="max-w-6xl mx-auto space-y-6">
 
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
-          <h1 className="text-3xl font-semibold text-gray-900">
-            Asia Mandate Quest
+        {/* HEADER */}
+        <div className="border border-gray-700 bg-gray-900 p-6">
+          <h1 className="text-2xl font-bold text-orange-500 tracking-wide">
+            ASIA MANDATE QUEST
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">
-            Institutional allocator simulation for advanced sales training.
+          <p className="text-gray-400 text-xs mt-2">
+            Institutional Allocator Simulation · Sales Intelligence Terminal
           </p>
 
-          <div className="mt-8">
-            <div className="flex justify-between text-sm font-medium text-gray-600">
-              <span>Allocator Engagement Level</span>
+          <div className="mt-6">
+            <div className="flex justify-between text-xs text-gray-400 uppercase tracking-wide">
+              <span>Engagement Level</span>
               <span>{engagement}%</span>
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
+            <div className="w-full h-2 bg-gray-800 mt-2">
               <div
-                className={`h-full ${engagementColor()} transition-all duration-300`}
+                className={`${engagementColor()} h-full transition-all duration-300`}
                 style={{ width: `${engagement}%` }}
               />
             </div>
-            {engagement <= 30 && !meetingEnded && (
-              <p className="text-red-600 text-sm mt-3">
-                Engagement critically low.
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* CONTROLS */}
+        <div className="grid md:grid-cols-3 gap-4 border border-gray-700 bg-gray-900 p-6 text-sm">
           <div>
-            <label className="text-sm text-gray-600 font-medium">
-              Location
-            </label>
+            <label className="text-gray-400 text-xs uppercase">Location</label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
             >
               <option>Singapore</option>
               <option>Hong Kong</option>
@@ -158,14 +148,12 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600 font-medium">
-              Client Type
-            </label>
+            <label className="text-gray-400 text-xs uppercase">Client Type</label>
             <select
               value={clientType}
               onChange={(e) => setClientType(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
             >
               <option>Sovereign Wealth Fund</option>
               <option>Pension Fund</option>
@@ -175,14 +163,12 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600 font-medium">
-              Difficulty
-            </label>
+            <label className="text-gray-400 text-xs uppercase">Difficulty</label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
             >
               <option>Standard</option>
               <option>Skeptical</option>
@@ -191,15 +177,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Chat */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 h-96 overflow-y-auto space-y-4">
+        {/* CHAT WINDOW */}
+        <div className="border border-gray-700 bg-gray-900 p-6 h-96 overflow-y-auto space-y-4 text-sm">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`max-w-xl px-4 py-3 rounded-xl text-sm leading-relaxed ${
+              className={`p-3 ${
                 msg.role === "user"
-                  ? "bg-emerald-100 ml-auto text-gray-800"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-gray-800 border-l-4 border-orange-500"
+                  : "bg-black border-l-4 border-green-500"
               }`}
             >
               {msg.content}
@@ -207,14 +193,14 @@ export default function Home() {
           ))}
 
           {loading && !meetingEnded && (
-            <div className="text-gray-500 text-sm italic">
-              The client is considering your question...
+            <div className="text-gray-500 italic">
+              Allocator reviewing your response...
             </div>
           )}
         </div>
 
-        {/* Input */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 space-y-5">
+        {/* INPUT */}
+        <div className="border border-gray-700 bg-gray-900 p-6 space-y-4">
           <div className="flex gap-3">
             <input
               value={message}
@@ -222,40 +208,39 @@ export default function Home() {
               disabled={meetingEnded}
               placeholder={
                 meetingEnded
-                  ? "Meeting has concluded. Reset to begin again."
-                  : "Type your question..."
+                  ? "Session concluded. Reset to begin again."
+                  : "Enter your response..."
               }
-              className="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 bg-black border border-gray-700 p-3 text-gray-200 focus:outline-none focus:border-orange-500"
             />
             <button
               onClick={sendMessage}
               disabled={meetingEnded}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 transition"
+              className="bg-orange-600 hover:bg-orange-500 text-black font-semibold px-6 py-3 transition disabled:opacity-50"
             >
-              Send
+              SEND
             </button>
             <button
               onClick={reviewPerformance}
               disabled={meetingEnded}
-              className="bg-gray-900 hover:bg-black text-white px-6 py-2 rounded-lg disabled:opacity-50 transition"
+              className="bg-gray-700 hover:bg-gray-600 px-6 py-3 transition disabled:opacity-50"
             >
-              Review Session
+              REVIEW
             </button>
           </div>
 
           <button
             onClick={resetSimulation}
-            className="text-red-600 text-sm hover:underline"
+            className="text-red-500 text-xs hover:underline"
           >
             Reset Simulation
           </button>
         </div>
 
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-400 pt-6">
-          © {new Date().getFullYear()} Asia Mandate Quest · Training Simulation Tool
+        {/* FOOTER */}
+        <div className="text-center text-gray-600 text-xs pt-4 border-t border-gray-800">
+          © {new Date().getFullYear()} Asia Mandate Quest · Institutional Training System
         </div>
-
       </div>
     </div>
   );
