@@ -17,9 +17,9 @@ export async function POST(req: Request) {
       engagement = 100,
     } = body;
 
-    // =============================
-    // REVIEW MODE
-    // =============================
+    // =====================================================
+    // REVIEW MODE (UNCHANGED – STRUCTURED COACHING)
+    // =====================================================
     if (reviewMode) {
       const evaluation = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -52,9 +52,9 @@ Under 400 words.
       });
     }
 
-    // =============================
-    // END MEETING AT 0
-    // =============================
+    // =====================================================
+    // END MEETING IF ENGAGEMENT 0
+    // =====================================================
     if (engagement <= 0) {
       return NextResponse.json({
         reply:
@@ -64,9 +64,9 @@ Under 400 words.
       });
     }
 
-    // =============================
-    // ENGAGEMENT TONE LAYER
-    // =============================
+    // =====================================================
+    // ENGAGEMENT BEHAVIOR LAYER
+    // =====================================================
     let engagementLayer = "";
 
     if (engagement <= 40 && engagement > 20) {
@@ -75,8 +75,8 @@ Engagement Status: Low
 
 - Responses become shorter.
 - Increased skepticism.
-- Subtle time pressure signals.
-- No increase in disclosure depth.
+- Introduce subtle time pressure.
+- Do not expand disclosure depth.
 `;
     }
 
@@ -86,222 +86,130 @@ Engagement Status: Critical
 
 - Very brief responses.
 - Visible impatience.
-- Question the value of continuing.
+- Question continuation value.
 - Emphasize opportunity cost.
-- Do NOT expand answers.
+- Do NOT elaborate.
 `;
     }
 
-    // =============================
-    // CLIENT MODELING
-    // =============================
+    // =====================================================
+    // CLIENT STRUCTURE
+    // =====================================================
     let structuralContext = "";
     let behavioralRules = "";
     let toneBlock = "";
     let hiddenConstraint = "";
-    let sensitivityMultiplier = 1;
 
-    // ---------------------------------
-    // SOVEREIGN WEALTH FUND (UNCHANGED)
-    // ---------------------------------
     if (clientType === "Sovereign Wealth Fund") {
-      sensitivityMultiplier = 1.0;
-
       structuralContext = `
 Structural Characteristics:
-- Long investment horizon
-- Institutional decision process
-- Political sensitivity
+- Long horizon allocator
+- Institutional decision hierarchy
+- Political and reputational sensitivity
 `;
 
       behavioralRules = `
 Behavioral Discipline:
 
-- Broad questions receive high-level responses (2–3 sentences max).
+- Broad questions → 2–3 sentence high-level response only.
+- Do NOT volunteer internal process unless directly asked.
 - Do NOT list multiple priorities unless probed.
-- Do NOT explain internal process unless asked directly.
-
-Disclosure Control:
-
-- Broad → General framing only.
-- Specific → Framework acknowledgement, no detail.
-- Digging → Partial signal only.
-- Political/internal constraints → Only after layered sequencing.
-
-Never volunteer hidden constraints unprompted.
+- Disclosure must follow a ladder (broad → structured → partial → deeper).
+- Never over-answer.
+- Never educate the manager.
+- Never provide consultant-style summaries.
 `;
 
       toneBlock = `
-Tone Control:
+Tone:
 
 - Senior sovereign allocator.
-- Controlled and concise.
-- No unnecessary elaboration.
-- Respond only to what is asked.
+- Controlled, analytical, concise.
+- Slightly guarded.
+- No enthusiasm without justification.
 `;
 
       hiddenConstraint = `
 Hidden Constraint:
 - Near allocation limits.
-- Internal preference toward established managers.
+- Committee preference toward established managers.
+- Sensitive internal optics around new mandates.
+
+Do NOT reveal this unless the manager probes effectively.
 `;
     }
 
-    // ---------------------------------
-    // PENSION FUND
-    // ---------------------------------
-    if (clientType === "Pension Fund") {
-      sensitivityMultiplier = 1.2;
-
-      structuralContext = `
-Structural Characteristics:
-- Liability-driven mandate
-- Board oversight
-- Consultant involvement
-- Risk budget discipline
-`;
-
-      behavioralRules = `
-Behavioral Discipline:
-
-- Emphasize downside risk and funding ratio impact.
-- Reference board and consultant frequently.
-- Require clarity before engaging deeply.
-- Avoid discussing allocation flexibility early.
-
-Disclosure follows structured sequencing.
-`;
-
-      toneBlock = `
-Tone Control:
-
-- Measured and analytical.
-- Risk-focused.
-- Governance-aware.
-- Slightly more cautious than sovereign.
-`;
-
-      hiddenConstraint = `
-Hidden Constraint:
-- Recent drawdown triggered board scrutiny.
-- Risk tolerance currently tighter.
-`;
-    }
-
-    // ---------------------------------
-    // INSURANCE COMPANY (STRICTEST)
-    // ---------------------------------
-    if (clientType === "Insurance Company") {
-      sensitivityMultiplier = 1.4;
-
-      structuralContext = `
-Structural Characteristics:
-- Regulatory capital constraints
-- Solvency ratio sensitivity
-- Duration matching requirements
-- Liquidity discipline
-`;
-
-      behavioralRules = `
-Behavioral Discipline:
-
-- Prioritize capital treatment and volatility impact.
-- Low tolerance for imprecision.
-- Do not entertain vague strategy discussions.
-- Avoid allocation flexibility discussion early.
-
-Disclosure only advances with highly specific questioning.
-`;
-
-      toneBlock = `
-Tone Control:
-
-- Technical and conservative.
-- Precise and guarded.
-- Low patience for generalities.
-`;
-
-      hiddenConstraint = `
-Hidden Constraint:
-- Capital ratio under internal review.
-- Increased regulatory scrutiny.
-`;
-    }
-
-    // ---------------------------------
-    // FAMILY OFFICE (MORE FORGIVING)
-    // ---------------------------------
-    if (clientType === "Family Office") {
-      sensitivityMultiplier = 0.7;
-
-      structuralContext = `
-Structural Characteristics:
-- Principal-led decisions
-- Flexible mandate
-- Faster decision cycle
-`;
-
-      behavioralRules = `
-Behavioral Discipline:
-
-- Evaluate manager credibility and alignment.
-- More open conversationally.
-- Disclosure tied to perceived authenticity.
-`;
-
-      toneBlock = `
-Tone Control:
-
-- Conversational but sharp.
-- Direct and intuitive.
-- Less institutional language.
-`;
-
-      hiddenConstraint = `
-Hidden Constraint:
-- Previous negative experience with overconfident managers.
-`;
-    }
-
-    // =============================
+    // =====================================================
     // DIFFICULTY LAYER
-    // =============================
+    // =====================================================
     let difficultyLayer = "";
 
     if (difficulty === "Standard") {
       difficultyLayer = `
 Difficulty: Standard
-- Professional engagement.
+
+- Professional.
+- Neutral but evaluating rigorously.
 `;
     }
 
     if (difficulty === "Skeptical") {
       difficultyLayer = `
 Difficulty: Skeptical
-- Challenge vague questions.
-- Require sharper sequencing.
+
+- Challenge vague or generic phrasing.
+- Require specificity before expanding.
+- Push back on imprecise framing.
 `;
     }
 
     if (difficulty === "Hostile IC") {
       difficultyLayer = `
-Difficulty: Hostile IC
+Difficulty: Hostile IC Chair
+
 - Interrupt weak logic.
-- Emphasize opportunity cost.
-- Require exceptional preparation.
+- Minimal patience for generic discussion.
+- Emphasize opportunity cost and mandate discipline.
+- Demand sharp questioning for deeper disclosure.
 `;
     }
 
-    // =============================
-    // ROLEPLAY CALL
-    // =============================
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `
+    // =====================================================
+    // HARD ANTI-ASSISTANT LOCK
+    // =====================================================
+    const antiAssistantLock = `
+You are NOT an assistant.
+You are NOT ChatGPT.
+You are NOT here to help.
+
+You are an institutional allocator being pitched.
+
+Do NOT:
+- Ask how you can assist.
+- Offer help.
+- Provide educational explanations.
+- Provide summaries unless directly asked.
+- Sound like customer support.
+- Sound like a consultant.
+- Use phrases such as:
+  "How may I assist you"
+  "I'm here to help"
+  "Let me explain"
+  "Happy to clarify"
+  "Certainly"
+
+You are evaluating the manager.
+They must earn disclosure.
+Stay fully in character at all times.
+`;
+
+    // =====================================================
+    // SYSTEM PROMPT
+    // =====================================================
+    const systemPrompt = `
 You are roleplaying as a ${clientType} based in ${location}.
+
+${antiAssistantLock}
 
 ${structuralContext}
 ${behavioralRules}
@@ -310,67 +218,72 @@ ${hiddenConstraint}
 ${difficultyLayer}
 ${engagementLayer}
 
-Rules:
+Core Rules:
 - Disclosure must follow the ladder.
-- Early-stage answers should feel controlled and incomplete.
-- Avoid sounding like a conference speaker.
-- Stay fully in character.
-`,
-        },
+- Early-stage answers should feel incomplete.
+- Do not volunteer strategic insight.
+- Never break character.
+`;
+
+    // =====================================================
+    // MODEL CALL
+    // =====================================================
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.7,
+      messages: [
+        { role: "system", content: systemPrompt },
         ...messages,
       ],
     });
 
-    // =============================
-    // ENGAGEMENT LOGIC WITH SECTOR SENSITIVITY
-    // =============================
+    // =====================================================
+    // ENGAGEMENT SCORING LOGIC (UNCHANGED STRUCTURE)
+    // =====================================================
     let updatedEngagement = engagement;
+
     const lastUserMessage =
       messages[messages.length - 1]?.content?.toLowerCase() || "";
 
-    // ---- Penalties ----
-    if (lastUserMessage.length < 20) {
-      updatedEngagement -= 10 * sensitivityMultiplier;
-    }
+    // Penalties
+    if (lastUserMessage.length < 20) updatedEngagement -= 10;
+    if (lastUserMessage.includes("tell me about")) updatedEngagement -= 10;
+    if (lastUserMessage.includes("how would you describe"))
+      updatedEngagement -= 5;
+    if (lastUserMessage.includes("our strategy")) updatedEngagement -= 15;
 
-    if (lastUserMessage.includes("tell me about")) {
-      updatedEngagement -= 10 * sensitivityMultiplier;
-    }
-
-    if (lastUserMessage.includes("our strategy")) {
-      updatedEngagement -= 15 * sensitivityMultiplier;
-    }
-
-    // ---- Rewards ----
+    // Rewards
     if (
       lastUserMessage.includes("allocation") ||
       lastUserMessage.includes("capacity") ||
       lastUserMessage.includes("limits")
-    ) {
-      updatedEngagement += 5 / sensitivityMultiplier;
-    }
-
-    if (
-      lastUserMessage.includes("displace") ||
-      lastUserMessage.includes("replace") ||
-      lastUserMessage.includes("incumbent")
-    ) {
-      updatedEngagement += 8 / sensitivityMultiplier;
-    }
+    )
+      updatedEngagement += 5;
 
     if (
       lastUserMessage.includes("what would cause") ||
       lastUserMessage.includes("what would need to happen")
-    ) {
-      updatedEngagement += 7 / sensitivityMultiplier;
-    }
+    )
+      updatedEngagement += 7;
+
+    if (
+      lastUserMessage.includes("committee") ||
+      lastUserMessage.includes("internal pressure")
+    )
+      updatedEngagement += 5;
+
+    if (
+      lastUserMessage.includes("displace") ||
+      lastUserMessage.includes("incumbent")
+    )
+      updatedEngagement += 8;
 
     if (updatedEngagement > 100) updatedEngagement = 100;
     if (updatedEngagement < 0) updatedEngagement = 0;
 
     return NextResponse.json({
       reply: response.choices[0].message.content,
-      engagement: Math.round(updatedEngagement),
+      engagement: updatedEngagement,
       meetingEnded: updatedEngagement === 0,
     });
   } catch (error) {
