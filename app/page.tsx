@@ -101,12 +101,12 @@ export default function Home() {
 
   function engagementColor() {
     if (engagement > 60) return "bg-green-500";
-    if (engagement > 30) return "bg-yellow-500";
-    return "bg-red-600";
+    if (engagement > 30) return "bg-yellow-400";
+    return "bg-red-500";
   }
 
   return (
-    <div className="min-h-screen bg-black text-gray-200 px-6 py-8">
+    <div className="min-h-screen bg-gray-950 text-white px-6 py-8">
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* HEADER */}
@@ -114,12 +114,12 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-orange-500 tracking-wide">
             ASIA MANDATE QUEST
           </h1>
-          <p className="text-gray-400 text-xs mt-2">
+          <p className="text-white mt-2 text-sm">
             Institutional Allocator Simulation · Sales Intelligence Terminal
           </p>
 
           <div className="mt-6">
-            <div className="flex justify-between text-xs text-gray-400 uppercase tracking-wide">
+            <div className="flex justify-between text-sm font-medium">
               <span>Engagement Level</span>
               <span>{engagement}%</span>
             </div>
@@ -133,14 +133,14 @@ export default function Home() {
         </div>
 
         {/* CONTROLS */}
-        <div className="grid md:grid-cols-3 gap-4 border border-gray-700 bg-gray-900 p-6 text-sm">
+        <div className="grid md:grid-cols-3 gap-4 border border-gray-700 bg-gray-900 p-6 text-white">
           <div>
-            <label className="text-gray-400 text-xs uppercase">Location</label>
+            <label className="text-sm font-medium">Location</label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
+              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
             >
               <option>Singapore</option>
               <option>Hong Kong</option>
@@ -148,12 +148,12 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="text-gray-400 text-xs uppercase">Client Type</label>
+            <label className="text-sm font-medium">Client Type</label>
             <select
               value={clientType}
               onChange={(e) => setClientType(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
+              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
             >
               <option>Sovereign Wealth Fund</option>
               <option>Pension Fund</option>
@@ -163,12 +163,12 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="text-gray-400 text-xs uppercase">Difficulty</label>
+            <label className="text-sm font-medium">Difficulty</label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
               disabled={meetingEnded}
-              className="w-full mt-2 bg-black border border-gray-700 p-2 text-gray-200 focus:outline-none focus:border-orange-500"
+              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
             >
               <option>Standard</option>
               <option>Skeptical</option>
@@ -177,15 +177,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CHAT WINDOW */}
+        {/* CHAT */}
         <div className="border border-gray-700 bg-gray-900 p-6 h-96 overflow-y-auto space-y-4 text-sm">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`p-3 ${
+              className={`p-4 ${
                 msg.role === "user"
-                  ? "bg-gray-800 border-l-4 border-orange-500"
-                  : "bg-black border-l-4 border-green-500"
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-800 text-white"
               }`}
             >
               {msg.content}
@@ -193,7 +193,7 @@ export default function Home() {
           ))}
 
           {loading && !meetingEnded && (
-            <div className="text-gray-500 italic">
+            <div className="text-gray-400 italic">
               Allocator reviewing your response...
             </div>
           )}
@@ -211,19 +211,19 @@ export default function Home() {
                   ? "Session concluded. Reset to begin again."
                   : "Enter your response..."
               }
-              className="flex-1 bg-black border border-gray-700 p-3 text-gray-200 focus:outline-none focus:border-orange-500"
+              className="flex-1 bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:border-orange-500"
             />
             <button
               onClick={sendMessage}
               disabled={meetingEnded}
-              className="bg-orange-600 hover:bg-orange-500 text-black font-semibold px-6 py-3 transition disabled:opacity-50"
+              className="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-6 py-3 transition disabled:opacity-50"
             >
               SEND
             </button>
             <button
               onClick={reviewPerformance}
               disabled={meetingEnded}
-              className="bg-gray-700 hover:bg-gray-600 px-6 py-3 transition disabled:opacity-50"
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 transition disabled:opacity-50"
             >
               REVIEW
             </button>
@@ -231,14 +231,13 @@ export default function Home() {
 
           <button
             onClick={resetSimulation}
-            className="text-red-500 text-xs hover:underline"
+            className="text-red-400 text-sm hover:underline"
           >
             Reset Simulation
           </button>
         </div>
 
-        {/* FOOTER */}
-        <div className="text-center text-gray-600 text-xs pt-4 border-t border-gray-800">
+        <div className="text-center text-gray-500 text-xs pt-4 border-t border-gray-800">
           © {new Date().getFullYear()} Asia Mandate Quest · Institutional Training System
         </div>
       </div>
