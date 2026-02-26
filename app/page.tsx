@@ -10,7 +10,7 @@ export default function HomePage() {
 
         <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
           Institutional Sales Intelligence Simulator.
-          Train your ability to uncover hidden allocator needs
+          Supercharge your ability to uncover hidden allocator needs
           through disciplined funnel questioning.
         </p>
 
