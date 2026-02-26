@@ -2,12 +2,17 @@
 
 import React, { useState } from "react";
 
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export default function Home() {
   const [location, setLocation] = useState("Singapore");
   const [clientType, setClientType] = useState("Sovereign Wealth Fund");
   const [difficulty, setDifficulty] = useState("Standard");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [engagement, setEngagement] = useState(100);
   const [meetingEnded, setMeetingEnded] = useState(false);
@@ -15,7 +20,11 @@ export default function Home() {
   async function sendMessage() {
     if (!message.trim() || meetingEnded) return;
 
-    const newMessages = [...messages, { role: "user", content: message }];
+    const newMessages: Message[] = [
+      ...messages,
+      { role: "user", content: message },
+    ];
+
     setMessages(newMessages);
     setMessage("");
     setLoading(true);
@@ -103,7 +112,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 px-6 py-10">
       <div className="max-w-5xl mx-auto space-y-8">
 
-        {/* Header Card */}
+        {/* Header */}
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
           <h1 className="text-3xl font-semibold text-gray-900">
             Asia Mandate Quest
