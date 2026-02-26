@@ -55,8 +55,7 @@ const newMessages: { role: "user" | "assistant"; content: string }[] = [
     setLoading(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {    if (e.key === "Enter") {
       sendMessage();
     }
   };
