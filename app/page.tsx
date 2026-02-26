@@ -7,8 +7,11 @@ export default function SimulatorPage() {
   { role: "user" | "assistant"; content: string }[]
 >([]);
   const [input, setInput] = useState("");
-  const [persona, setPersona] = useState(null);
-  const [engagement, setEngagement] = useState(100);
+const [persona, setPersona] = useState<{
+  name: string;
+  title: string;
+  clientType?: string;
+} | null>(null);  const [engagement, setEngagement] = useState(100);
   const [loading, setLoading] = useState(false);
 
   const location = "Singapore";
