@@ -1,65 +1,253 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from "react";
 
 export default function Home() {
+  const [location, setLocation] = useState("Singapore");
+  const [clientType, setClientType] = useState("Sovereign Wealth Fund");
+  const [difficulty, setDifficulty] = useState("Standard");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [engagement, setEngagement] = useState(100);
+  const [meetingEnded, setMeetingEnded] = useState(false);
+
+  async function sendMessage() {
+    if (!message.trim() || meetingEnded) return;
+
+    const newMessages = [...messages, { role: "user", content: message }];
+    setMessages(newMessages);
+    setMessage("");
+    setLoading(true);
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: newMessages,
+        location,
+        clientType,
+        difficulty,
+        engagement,
+      }),
+    });
+
+    const data = await res.json();
+
+    setMessages([
+      ...newMessages,
+      { role: "assistant", content: data.reply },
+    ]);
+
+    if (typeof data.engagement === "number") {
+      setEngagement(data.engagement);
+    }
+
+    if (data.meetingEnded) {
+      setMeetingEnded(true);
+    }
+
+    setLoading(false);
+  }
+
+  async function reviewPerformance() {
+    if (messages.length === 0 || meetingEnded) return;
+
+    setLoading(true);
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages,
+        location,
+        clientType,
+        difficulty,
+        engagement,
+        reviewMode: true,
+      }),
+    });
+
+    const data = await res.json();
+
+    setMessages([
+      ...messages,
+      { role: "assistant", content: data.reply },
+    ]);
+
+    setLoading(false);
+  }
+
+  function resetSimulation() {
+    const confirmReset = window.confirm(
+      "Do you really wish to restart?"
+    );
+    if (!confirmReset) return;
+
+    setMessages([]);
+    setMessage("");
+    setLocation("Singapore");
+    setClientType("Sovereign Wealth Fund");
+    setDifficulty("Standard");
+    setEngagement(100);
+    setMeetingEnded(false);
+  }
+
+  function engagementColor() {
+    if (engagement > 60) return "bg-emerald-500";
+    if (engagement > 30) return "bg-amber-500";
+    return "bg-red-500";
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gray-50 px-6 py-10">
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        {/* Header Card */}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Asia Mandate Quest
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-gray-500 mt-2 text-sm">
+            Institutional allocator simulation for advanced sales training.
           </p>
+
+          <div className="mt-8">
+            <div className="flex justify-between text-sm font-medium text-gray-600">
+              <span>Allocator Engagement Level</span>
+              <span>{engagement}%</span>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
+              <div
+                className={`h-full ${engagementColor()} transition-all duration-300`}
+                style={{ width: `${engagement}%` }}
+              />
+            </div>
+            {engagement <= 30 && !meetingEnded && (
+              <p className="text-red-600 text-sm mt-3">
+                Engagement critically low.
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Controls */}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="text-sm text-gray-600 font-medium">
+              Location
+            </label>
+            <select
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              disabled={meetingEnded}
+              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option>Singapore</option>
+              <option>Hong Kong</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600 font-medium">
+              Client Type
+            </label>
+            <select
+              value={clientType}
+              onChange={(e) => setClientType(e.target.value)}
+              disabled={meetingEnded}
+              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option>Sovereign Wealth Fund</option>
+              <option>Pension Fund</option>
+              <option>Family Office</option>
+              <option>Insurance Company</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600 font-medium">
+              Difficulty
+            </label>
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              disabled={meetingEnded}
+              className="w-full mt-2 border border-gray-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option>Standard</option>
+              <option>Skeptical</option>
+              <option>Hostile IC</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Chat */}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 h-96 overflow-y-auto space-y-4">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`max-w-xl px-4 py-3 rounded-xl text-sm leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-emerald-100 ml-auto text-gray-800"
+                  : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+
+          {loading && !meetingEnded && (
+            <div className="text-gray-500 text-sm italic">
+              The client is considering your question...
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 space-y-5">
+          <div className="flex gap-3">
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              disabled={meetingEnded}
+              placeholder={
+                meetingEnded
+                  ? "Meeting has concluded. Reset to begin again."
+                  : "Type your question..."
+              }
+              className="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <button
+              onClick={sendMessage}
+              disabled={meetingEnded}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 transition"
+            >
+              Send
+            </button>
+            <button
+              onClick={reviewPerformance}
+              disabled={meetingEnded}
+              className="bg-gray-900 hover:bg-black text-white px-6 py-2 rounded-lg disabled:opacity-50 transition"
+            >
+              Review Session
+            </button>
+          </div>
+
+          <button
+            onClick={resetSimulation}
+            className="text-red-600 text-sm hover:underline"
           >
-            Documentation
-          </a>
+            Reset Simulation
+          </button>
         </div>
-      </main>
+
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-400 pt-6">
+          © {new Date().getFullYear()} Asia Mandate Quest · Training Simulation Tool
+        </div>
+
+      </div>
     </div>
   );
 }
