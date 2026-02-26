@@ -2,245 +2,137 @@
 
 import React, { useState } from "react";
 
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-export default function Home() {
-  const [location, setLocation] = useState("Singapore");
-  const [clientType, setClientType] = useState("Sovereign Wealth Fund");
-  const [difficulty, setDifficulty] = useState("Standard");
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function SimulatorPage() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [persona, setPersona] = useState(null);
   const [engagement, setEngagement] = useState(100);
-  const [meetingEnded, setMeetingEnded] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function sendMessage() {
-    if (!message.trim() || meetingEnded) return;
+  const location = "Singapore";
+  const clientType = "Sovereign Wealth Fund";
+  const difficulty = "Standard";
 
-    const newMessages: Message[] = [
-      ...messages,
-      { role: "user", content: message },
-    ];
+  const sendMessage = async () => {
+    if (!input.trim()) return;
 
+    const newMessages = [...messages, { role: "user", content: input }];
     setMessages(newMessages);
-    setMessage("");
+    setInput("");
     setLoading(true);
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: newMessages,
-        location,
-        clientType,
-        difficulty,
-        engagement,
-      }),
-    });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages,
+          location,
+          clientType,
+          difficulty,
+          engagement,
+          persona,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setMessages([
-      ...newMessages,
-      { role: "assistant", content: data.reply },
-    ]);
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: data.reply },
+      ]);
 
-    if (typeof data.engagement === "number") {
       setEngagement(data.engagement);
-    }
-
-    if (data.meetingEnded) {
-      setMeetingEnded(true);
+      setPersona(data.persona);
+    } catch (err) {
+      console.error(err);
     }
 
     setLoading(false);
-  }
+  };
 
-  async function reviewPerformance() {
-    if (messages.length === 0 || meetingEnded) return;
-
-    setLoading(true);
-
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages,
-        location,
-        clientType,
-        difficulty,
-        engagement,
-        reviewMode: true,
-      }),
-    });
-
-    const data = await res.json();
-
-    setMessages([
-      ...messages,
-      { role: "assistant", content: data.reply },
-    ]);
-
-    setLoading(false);
-  }
-
-  function resetSimulation() {
-    if (!confirm("Restart simulation?")) return;
-
-    setMessages([]);
-    setMessage("");
-    setLocation("Singapore");
-    setClientType("Sovereign Wealth Fund");
-    setDifficulty("Standard");
-    setEngagement(100);
-    setMeetingEnded(false);
-  }
-
-  function engagementColor() {
-    if (engagement > 60) return "bg-green-500";
-    if (engagement > 30) return "bg-yellow-400";
-    return "bg-red-500";
-  }
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-6 py-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-
-        {/* HEADER */}
-        <div className="border border-gray-700 bg-gray-900 p-6">
-          <h1 className="text-2xl font-bold text-orange-500 tracking-wide">
-            ASIA MANDATE QUEST
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      
+      {/* HEADER */}
+      <div className="bg-white border-b">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
+            {persona
+              ? `Meeting with ${persona.name} — ${persona.title}`
+              : "Institutional Meeting Simulation"}
           </h1>
-          <p className="text-white mt-2 text-sm">
-            Institutional Allocator Simulation · Sales Intelligence Terminal
-          </p>
 
-          <div className="mt-6">
-            <div className="flex justify-between text-sm font-medium">
-              <span>Engagement Level</span>
-              <span>{engagement}%</span>
-            </div>
-            <div className="w-full h-2 bg-gray-800 mt-2">
-              <div
-                className={`${engagementColor()} h-full transition-all duration-300`}
-                style={{ width: `${engagement}%` }}
-              />
-            </div>
+          <div className="text-sm text-gray-500 mt-1">
+            {persona ? clientType : ""}
+          </div>
+
+          <div className="mt-3 bg-gray-100 border rounded-md p-3">
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-gray-900">
+                Objective:
+              </span>{" "}
+              Uncover hidden needs through disciplined funnel questioning.
+              Disclosure must be earned.
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* CONTROLS */}
-        <div className="grid md:grid-cols-3 gap-4 border border-gray-700 bg-gray-900 p-6 text-white">
-          <div>
-            <label className="text-sm font-medium">Location</label>
-            <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              disabled={meetingEnded}
-              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
-            >
-              <option>Singapore</option>
-              <option>Hong Kong</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Client Type</label>
-            <select
-              value={clientType}
-              onChange={(e) => setClientType(e.target.value)}
-              disabled={meetingEnded}
-              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
-            >
-              <option>Sovereign Wealth Fund</option>
-              <option>Pension Fund</option>
-              <option>Family Office</option>
-              <option>Insurance Company</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Difficulty</label>
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              disabled={meetingEnded}
-              className="w-full mt-2 bg-gray-800 border border-gray-600 p-2 text-white focus:outline-none focus:border-orange-500"
-            >
-              <option>Standard</option>
-              <option>Skeptical</option>
-              <option>Hostile IC</option>
-            </select>
-          </div>
-        </div>
-
-        {/* CHAT */}
-        <div className="border border-gray-700 bg-gray-900 p-6 h-96 overflow-y-auto space-y-4 text-sm">
+      {/* CHAT WINDOW */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`p-4 ${
-                msg.role === "user"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-800 text-white"
+              className={`flex ${
+                msg.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.content}
+              <div
+                className={`max-w-md px-4 py-3 rounded-lg text-sm ${
+                  msg.role === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border text-gray-800"
+                }`}
+              >
+                {msg.content}
+              </div>
             </div>
           ))}
 
-          {loading && !meetingEnded && (
-            <div className="text-gray-400 italic">
-              Allocator reviewing your response...
-            </div>
+          {loading && (
+            <div className="text-sm text-gray-400">Thinking...</div>
           )}
         </div>
+      </div>
 
-        {/* INPUT */}
-        <div className="border border-gray-700 bg-gray-900 p-6 space-y-4">
-          <div className="flex gap-3">
-            <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              disabled={meetingEnded}
-              placeholder={
-                meetingEnded
-                  ? "Session concluded. Reset to begin again."
-                  : "Enter your response..."
-              }
-              className="flex-1 bg-gray-800 border border-gray-600 p-3 text-white focus:outline-none focus:border-orange-500"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={meetingEnded}
-              className="bg-orange-600 hover:bg-orange-500 text-white font-semibold px-6 py-3 transition disabled:opacity-50"
-            >
-              SEND
-            </button>
-            <button
-              onClick={reviewPerformance}
-              disabled={meetingEnded}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 transition disabled:opacity-50"
-            >
-              REVIEW
-            </button>
-          </div>
-
+      {/* INPUT */}
+      <div className="bg-white border-t">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex gap-3">
+          <input
+            type="text"
+            className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type your question..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
           <button
-            onClick={resetSimulation}
-            className="text-red-400 text-sm hover:underline"
+            onClick={sendMessage}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition"
           >
-            Reset Simulation
+            Send
           </button>
         </div>
-
-        <div className="text-center text-gray-500 text-xs pt-4 border-t border-gray-800">
-          © {new Date().getFullYear()} Asia Mandate Quest · Institutional Training System
-        </div>
       </div>
+
     </div>
   );
 }
