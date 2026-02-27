@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 
+type Role = "user" | "assistant";
+
 type Message = {
-  role: "user" | "assistant";
+  role: Role;
   content: string;
 };
 
@@ -35,10 +37,12 @@ export default function ChatPage() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [
-      ...messages,
-      { role: "user", content: input },
-    ];
+    const userMessage: Message = {
+      role: "user",
+      content: input,
+    };
+
+    const newMessages: Message[] = [...messages, userMessage];
 
     setMessages(newMessages);
     setInput("");
@@ -62,13 +66,14 @@ export default function ChatPage() {
 
       const data = await res.json();
 
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.reply },
-      ]);
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.reply ?? "No response.",
+      };
 
-      setEngagement(data.engagement);
-      setPersona(data.persona);
+      setMessages([...newMessages, assistantMessage]);
+      setEngagement(data.engagement ?? engagement);
+      setPersona(data.persona ?? persona);
     } catch (err) {
       console.error(err);
     }
@@ -84,9 +89,9 @@ export default function ChatPage() {
     }
   };
 
-  // -----------------------------
+  // ===============================
   // LANDING SCREEN
-  // -----------------------------
+  // ===============================
 
   if (!started) {
     return (
@@ -118,9 +123,7 @@ export default function ChatPage() {
               </label>
               <select
                 value={clientType}
-                onChange={(e) =>
-                  setClientType(e.target.value)
-                }
+                onChange={(e) => setClientType(e.target.value)}
                 className="w-full border rounded px-3 py-2"
               >
                 <option>Sovereign Wealth Fund</option>
@@ -135,9 +138,7 @@ export default function ChatPage() {
               </label>
               <select
                 value={difficulty}
-                onChange={(e) =>
-                  setDifficulty(e.target.value)
-                }
+                onChange={(e) => setDifficulty(e.target.value)}
                 className="w-full border rounded px-3 py-2"
               >
                 <option>Standard</option>
@@ -158,9 +159,9 @@ export default function ChatPage() {
     );
   }
 
-  // -----------------------------
+  // ===============================
   // SIMULATION SCREEN
-  // -----------------------------
+  // ===============================
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -200,7 +201,7 @@ export default function ChatPage() {
               <div
                 className={`max-w-md px-4 py-3 rounded-lg text-sm ${
                   msg.role === "user"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-black text-white"
                     : "bg-white border text-gray-800"
                 }`}
               >
