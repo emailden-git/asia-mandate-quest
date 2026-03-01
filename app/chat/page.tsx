@@ -90,13 +90,13 @@ export default function ChatPage() {
       <div className="max-w-5xl mx-auto">
 
         <h1 className="text-3xl font-bold mb-6">
-          Asia Mandate AI
+          Asia Mandate Quest: Discover their Hidden Needs and Constraints
         </h1>
 
         {/* ✅ ENGAGEMENT */}
         <div className="mb-8">
           <div className="font-semibold mb-2">
-            Allocator Engagement Level: {engagement}%
+            Allocator Patience Level: {engagement}%
           </div>
 
           <div className="w-full h-3 bg-gray-300 rounded-full overflow-hidden">
@@ -117,7 +117,7 @@ export default function ChatPage() {
         <div className="flex flex-wrap gap-6 mb-6">
 
           <div>
-            <label className="block text-sm mb-1">Location</label>
+            <label className="block text-sm mb-1">Client Location</label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
