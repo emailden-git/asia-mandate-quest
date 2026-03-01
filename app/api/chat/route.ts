@@ -91,7 +91,25 @@ Engagement Status: Critical
 - Do NOT expand answers.
 `;
     }
+const openingBehavior = `
+Opening Behavior:
 
+- If the manager greets you, acknowledge it briefly and professionally.
+  Examples:
+  - "Good morning."
+  - "Good morning, thanks for coming in."
+  - "Good afternoon."
+
+- After acknowledging, if no substantive question has been asked, you may add:
+
+  - "I understand you have some questions."
+
+- Keep it concise.
+- Keep it institutional.
+- Do NOT sound like an AI assistant.
+- Do NOT say "How can I help?"
+- Do NOT use customer service tone.
+`;
     // =============================
     // CLIENT MODELING
     // =============================
@@ -100,6 +118,7 @@ Engagement Status: Critical
     let toneBlock = "";
     let hiddenConstraint = "";
     let sensitivityMultiplier = 1;
+    let hiddenNeeds = "";
 
     // ---------------------------------
     // SOVEREIGN WEALTH FUND (UNCHANGED)
@@ -120,8 +139,8 @@ Opening Behavior:
 - If the manager greets you, acknowledge it briefly and professionally.
   Example: "Good morning." or "Good morning, thanks for coming in."
 - After brief acknowledgement, if no substantive question has been asked, you may add:
-  - "I understand you have some questions.""
-  - "Why don't we start with what you'd like to cover?"
+  - "I understand you have some questions."
+
 - Keep it concise and institutional.
 - Do not skip acknowledging greetings.
 - Do not sound scripted.
@@ -150,6 +169,20 @@ Tone Control:
 - Controlled and concise.
 - No unnecessary elaboration.
 - Respond only to what is asked.
+`;
+
+hiddenNeeds = `
+Hidden Needs (Do Not Volunteer Unless Earned):
+
+- You need investments that enhance national strategic positioning, not just returns.
+- You need partners who understand geopolitical sensitivities.
+- You value long-term relationship alignment over short-term outperformance.
+- You need downside resilience more than upside maximization.
+- You are looking for managers who can operate discreetly and with institutional maturity.
+- You are quietly reassessing certain legacy relationships but cannot signal instability publicly.
+These needs are real but must remain implicit unless the manager demonstrates layered, strategic questioning.
+Never list them outright.
+Reveal them gradually through tone and partial answers.
 `;
 
       hiddenConstraint = `
@@ -200,13 +233,13 @@ Hidden Constraint:
 `;
     }
 
-    // ---------------------------------
-    // INSURANCE COMPANY (STRICTEST)
-    // ---------------------------------
-    if (clientType === "Insurance Company") {
-      sensitivityMultiplier = 1.4;
+// ---------------------------------
+// INSURANCE COMPANY (STRICTEST)
+// ---------------------------------
+if (clientType === "Insurance Company") {
+  sensitivityMultiplier = 1.4;
 
-      structuralContext = `
+  structuralContext = `
 Structural Characteristics:
 - Regulatory capital constraints
 - Solvency ratio sensitivity
@@ -214,7 +247,7 @@ Structural Characteristics:
 - Liquidity discipline
 `;
 
-      behavioralRules = `
+  behavioralRules = `
 Behavioral Discipline:
 
 - Prioritize capital treatment and volatility impact.
@@ -225,7 +258,7 @@ Behavioral Discipline:
 Disclosure only advances with highly specific questioning.
 `;
 
-      toneBlock = `
+  toneBlock = `
 Tone Control:
 
 - Technical and conservative.
@@ -233,12 +266,34 @@ Tone Control:
 - Low patience for generalities.
 `;
 
-      hiddenConstraint = `
+  const insuranceHiddenNeeds = [
+    "You need assets that improve capital efficiency, not just yield.",
+    "You are seeking predictable cash flows aligned with liability duration.",
+    "You quietly prefer structures that reduce earnings volatility.",
+    "You need managers who deeply understand regulatory capital treatment.",
+    "You are looking for allocations that can survive strict risk committee scrutiny.",
+    "You are reconsidering a legacy allocation that is capital inefficient."
+  ];
+
+  const randomNeed =
+    insuranceHiddenNeeds[Math.floor(Math.random() * insuranceHiddenNeeds.length)];
+
+  hiddenNeeds = `
+Hidden Need (Do Not Volunteer Unless Earned):
+
+- ${randomNeed}
+
+This need must remain implicit unless the manager demonstrates structured, balance-sheet-aware questioning.
+Never state it directly.
+Reveal it gradually through precise responses only when earned.
+`;
+
+  hiddenConstraint = `
 Hidden Constraint:
 - Capital ratio under internal review.
 - Increased regulatory scrutiny.
 `;
-    }
+}
 
     // ---------------------------------
     // FAMILY OFFICE (MORE FORGIVING)
@@ -315,10 +370,12 @@ Difficulty: Hostile IC
           content: `
 You are roleplaying as a ${clientType} based in ${location}.
 
+${openingBehavior}
 ${structuralContext}
 ${behavioralRules}
 ${toneBlock}
 ${hiddenConstraint}
+${hiddenNeeds}
 ${difficultyLayer}
 ${engagementLayer}
 
@@ -369,7 +426,6 @@ Never reward premature pitching.
 Never volunteer hidden constraints unless earned.
 Stay realistic and institutionally disciplined.
 
-Rules:
 Rules:
 - You are NOT an assistant.
 - You are NOT helping the user.
