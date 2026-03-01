@@ -86,10 +86,10 @@ export default function ChatPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-5xl mx-auto">
+<main className="min-h-screen bg-gray-100 px-4 py-6 sm:p-8">
+        <div className="max-w-5xl mx-auto">
 
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="text-xl sm:text-3xl font-bold mb-6 leading-tight">
           Asia Mandate Quest: Discover their Hidden Needs and Constraints
         </h1>
 
@@ -114,8 +114,8 @@ export default function ChatPage() {
         </div>
 
         {/* ✅ CONTROLS */}
-        <div className="flex flex-wrap gap-6 mb-6">
-
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 mb-6">
+        
           <div>
             <label className="block text-sm mb-1">Client Location</label>
             <select
@@ -157,13 +157,12 @@ export default function ChatPage() {
         </div>
 
         {/* ✅ CHAT BOX */}
-        <div className="bg-white rounded-md shadow-sm border p-6 h-96 overflow-y-auto mb-6">
-          {messages.map((msg, index) => (
+<div className="bg-white rounded-md shadow-sm border p-4 sm:p-6 h-[60vh] sm:h-96 overflow-y-auto mb-6">          {messages.map((msg, index) => (
             <div key={index} className="mb-4">
               <span className="font-semibold">
                 {msg.role === "user" ? "You:" : "AI:"}
               </span>
-              <div className="whitespace-pre-wrap mt-1">
+              <div className="whitespace-pre-wrap break-words mt-1 text-sm sm:text-base">
                 {msg.content}
               </div>
             </div>
@@ -177,17 +176,17 @@ export default function ChatPage() {
         </div>
 
         {/* ✅ INPUT */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your question..."
-            className="flex-1 px-4 py-3 border rounded-md"
+            className="flex-1 px-4 py-3 border rounded-md text-sm sm:text-base"
           />
 
           <button
             onClick={sendMessage}
-            className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Send
           </button>
