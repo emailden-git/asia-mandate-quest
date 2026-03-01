@@ -86,27 +86,27 @@ export default function ChatPage() {
   };
 
   return (
-<main className="min-h-screen bg-gray-100 px-4 py-6 sm:p-8">
-        <div className="max-w-5xl mx-auto">
+<main className="min-h-screen bg-black px-4 py-6 sm:p-8 text-white">
+       <div className="max-w-5xl mx-auto">
 
-        <h1 className="text-xl sm:text-3xl font-bold mb-6 leading-tight">
+        <h1 className="text-xl sm:text-3xl font-bold mb-6 leading-tight tracking-wide">
           Asia Mandate Quest: Discover their Hidden Needs and Constraints
         </h1>
 
         {/* ✅ ENGAGEMENT */}
-        <div className="mb-8">
+       <div className="mb-8 border border-white/20 p-4">
           <div className="font-semibold mb-2">
             Allocator Patience Level: {engagement}%
           </div>
 
-          <div className="w-full h-3 bg-gray-300 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-white/20 overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 engagement > 60
-                  ? "bg-green-700"
+                 ? "bg-green-400"
                   : engagement > 30
-                  ? "bg-yellow-500"
-                  : "bg-red-700"
+                  ? "bg-yellow-400"
+                  : "bg-red-500"
               }`}
               style={{ width: `${engagement}%` }}
             />
@@ -121,7 +121,7 @@ export default function ChatPage() {
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-white"
+              className="px-3 py-2 border border-white bg-black text-white appearance-none rounded-none focus:outline-none"
             >
               <option>Singapore</option>
               <option>Hong Kong</option>
@@ -133,7 +133,7 @@ export default function ChatPage() {
             <select
               value={clientType}
               onChange={(e) => setClientType(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-white"
+              className="px-3 py-2 border border-white bg-black text-white appearance-none rounded-none focus:outline-none"
             >
               <option>Sovereign Wealth Fund</option>
               <option>Pension Fund</option>
@@ -147,7 +147,7 @@ export default function ChatPage() {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-white"
+              className="px-3 py-2 border border-white bg-black text-white appearance-none rounded-none focus:outline-none"
             >
               <option>Standard</option>
               <option>Skeptical</option>
@@ -157,12 +157,12 @@ export default function ChatPage() {
         </div>
 
         {/* ✅ CHAT BOX */}
-<div className="bg-white rounded-md shadow-sm border p-4 sm:p-6 h-[60vh] sm:h-96 overflow-y-auto mb-6">          {messages.map((msg, index) => (
+<div className="bg-black border border-white/20 p-4 sm:p-6 h-[60vh] sm:h-96 overflow-y-auto mb-6">        {messages.map((msg, index) => (
             <div key={index} className="mb-4">
               <span className="font-semibold">
                 {msg.role === "user" ? "You:" : "AI:"}
               </span>
-              <div className="whitespace-pre-wrap break-words mt-1 text-sm sm:text-base">
+              <div className="whitespace-pre-wrap break-words mt-1 text-sm sm:text-base text-white">
                 {msg.content}
               </div>
             </div>
@@ -181,19 +181,19 @@ export default function ChatPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your question..."
-            className="flex-1 px-4 py-3 border rounded-md text-sm sm:text-base"
+            className="flex-1 px-4 py-3 border border-white bg-black text-white focus:outline-none"
           />
 
           <button
             onClick={sendMessage}
-            className="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold tracking-wide transition"
           >
             Send
           </button>
 
           <button
             onClick={reviewPerformance}
-            className="px-6 py-3 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition"
+            className="px-4 sm:px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold tracking-wide transition"
           >
             Review Performance
           </button>
@@ -203,7 +203,7 @@ export default function ChatPage() {
         <div>
           <button
             onClick={resetSimulation}
-            className="px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-800 transition"
+            className="px-4 sm:px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold tracking-wide transition"
           >
             Reset Simulation
           </button>
