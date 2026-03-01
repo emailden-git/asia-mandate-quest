@@ -18,13 +18,58 @@ export default function ChatPage() {
   const [meetingEnded, setMeetingEnded] = useState(false);
 
   // ✅ SAFE PLACEHOLDER FUNCTIONS (so app runs)
-  const sendMessage = () => {
-    if (!message.trim()) return;
+ const sendMessage = async () => {
+  if (!message.trim() || meetingEnded) return;
 
-    const newMessage: Message = { role: "user", content: message };
-    setMessages([...messages, newMessage]);
-    setMessage("");
+  const newUserMessage: Message = {
+    role: "user",
+    content: message,
   };
+
+  const updatedMessages = [...messages, newUserMessage];
+
+  setMessages(updatedMessages);
+  setMessage("");
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: updatedMessages,
+        location,
+        clientType,
+        difficulty,
+        engagement,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.reply) {
+      setMessages([
+        ...updatedMessages,
+        { role: "assistant", content: data.reply },
+      ]);
+    }
+
+    if (typeof data.engagement === "number") {
+      setEngagement(data.engagement);
+    }
+
+    if (data.meetingEnded) {
+      setMeetingEnded(true);
+    }
+
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const reviewPerformance = () => {
     alert("Performance review placeholder");
@@ -37,7 +82,7 @@ export default function ChatPage() {
   };
 
   const getThinkingMessage = () => {
-    return "Thinking...";
+    return "Client is thinking...";
   };
 
   return (

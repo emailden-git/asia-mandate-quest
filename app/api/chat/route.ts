@@ -5,75 +5,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// =========================================
-// SIMPLE RANDOM NAME GENERATOR
-// =========================================
-
-function generatePersona(clientType: string, location: string) {
-  const asianFirstNames = [
-    "Mei Lin",
-    "Wei Zhang",
-    "Arjun",
-    "Siti",
-    "Kenji",
-    "Min Ho",
-    "Ananya",
-    "Daniel",
-    "Li Wei",
-    "Farah",
-  ];
-
-  const westernFirstNames = [
-    "James",
-    "Sarah",
-    "David",
-    "Emma",
-    "Michael",
-    "Laura",
-    "Andrew",
-    "Olivia",
-  ];
-
-  const lastNames = [
-    "Tan",
-    "Ng",
-    "Lim",
-    "Wong",
-    "Chen",
-    "Patel",
-    "Kim",
-    "Lee",
-    "Smith",
-    "Brown",
-  ];
-
-  const firstPool =
-    location === "Singapore" || location === "Hong Kong"
-      ? asianFirstNames
-      : westernFirstNames;
-
-  const firstName =
-    firstPool[Math.floor(Math.random() * firstPool.length)];
-  const lastName =
-    lastNames[Math.floor(Math.random() * lastNames.length)];
-
-  let title = "";
-
-  if (clientType === "Sovereign Wealth Fund")
-    title = "Deputy Chief Investment Officer";
-  if (clientType === "Pension Fund")
-    title = "Chief Investment Officer";
-  if (clientType === "Insurance Company")
-    title = "Head of Asset Allocation";
-  if (clientType === "Family Office")
-    title = "Principal";
-
-  return {
-    name: `${firstName} ${lastName}`,
-    title,
-  };
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -84,18 +15,11 @@ export async function POST(req: Request) {
       reviewMode,
       difficulty,
       engagement = 100,
-      persona,
     } = body;
 
-    // =============================================
-    // GENERATE OR USE EXISTING PERSONA
-    // =============================================
-    const activePersona =
-      persona || generatePersona(clientType, location);
-
-    // =============================================
+    // =============================
     // REVIEW MODE
-    // =============================================
+    // =============================
     if (reviewMode) {
       const evaluation = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -111,12 +35,12 @@ Evaluate the asset manager’s questioning using the Funnel Questioning Model.
 
 Provide:
 - Question breakdown
-- Funnel analysis
+- Funnel questioniung analysis
 - Depth analysis
 - Overall verdict
 - One structural improvement
 
-Under 400 words.
+Under 300 words.
 `,
           },
           ...messages,
@@ -128,189 +52,418 @@ Under 400 words.
       });
     }
 
-    // =============================================
-    // TERMINATE IF ENGAGEMENT 0
-    // =============================================
+    // =============================
+    // END MEETING AT 0
+    // =============================
     if (engagement <= 0) {
       return NextResponse.json({
         reply:
-          "We’ll conclude here. This discussion isn’t progressing in a productive direction.",
+          "We’ll conclude here. I’m not convinced this discussion is the best use of our time. Thank you.",
         engagement: 0,
         meetingEnded: true,
-        persona: activePersona,
       });
     }
 
-    // =============================================
-    // ENGAGEMENT LAYER
-    // =============================================
+    // =============================
+    // ENGAGEMENT TONE LAYER
+    // =============================
     let engagementLayer = "";
 
     if (engagement <= 40 && engagement > 20) {
       engagementLayer = `
-Engagement is low.
+Engagement Status: Low
 
-Responses shorten.
-Skepticism increases.
-Subtle time pressure appears.
-Do not increase disclosure depth.
+- Responses become shorter.
+- Increased skepticism.
+- Subtle time pressure signals.
+- No increase in disclosure depth.
 `;
     }
 
     if (engagement <= 20 && engagement > 0) {
       engagementLayer = `
-Engagement is critical.
+Engagement Status: Critical
 
-Very brief responses.
-Visible impatience.
-Question continuation value.
-Emphasize opportunity cost.
-Do NOT elaborate.
+- Very brief responses.
+- Visible impatience.
+- Question the value of continuing.
+- Emphasize opportunity cost.
+- Do NOT expand answers.
 `;
     }
 
-    // =============================================
-    // CLIENT STRUCTURE
-    // =============================================
-    let structuralContext = `
-You are ${activePersona.name}, ${activePersona.title},
-based in ${location}, working at a ${clientType}.
+    // =============================
+    // CLIENT MODELING
+    // =============================
+    let structuralContext = "";
+    let behavioralRules = "";
+    let toneBlock = "";
+    let hiddenConstraint = "";
+    let sensitivityMultiplier = 1;
+
+    // ---------------------------------
+    // SOVEREIGN WEALTH FUND (UNCHANGED)
+    // ---------------------------------
+    if (clientType === "Sovereign Wealth Fund") {
+      sensitivityMultiplier = 1.0;
+
+      structuralContext = `
+Structural Characteristics:
+- Long investment horizon
+- Institutional decision process
+- Political sensitivity
 `;
 
-    let behavioralRules = `
-This is a questioning simulation.
+      behavioralRules = `
 
-You are not being pitched.
-You do not structure the meeting.
-You do not guide the manager.
+Opening Behavior:
+- If the manager greets you, acknowledge it briefly and professionally.
+  Example: "Good morning." or "Good morning, thanks for coming in."
+- After brief acknowledgement, if no substantive question has been asked, you may add:
+  - "I understand you have some questions.""
+  - "Why don't we start with what you'd like to cover?"
+- Keep it concise and institutional.
+- Do not skip acknowledging greetings.
+- Do not sound scripted.
+- Do not sound use a customer service tone.
 
-Respond only to what is asked.
-Do not volunteer structure.
-Do not expand beyond the scope of the question.
+Behavioral Discipline:
 
-Disclosure Ladder:
+- Broad questions receive high-level responses (2–3 sentences max).
+- Do NOT list multiple priorities unless probed.
+- Do NOT explain internal process unless asked directly.
 
-Broad question → high-level response (2–3 sentences max).
-Specific probing → partial structured acknowledgement.
-Layered, intelligent questioning → controlled incremental disclosure.
-Hidden constraints → only if earned.
+Disclosure Control:
+
+- Broad → General framing only.
+- Specific → Framework acknowledgement, no detail.
+- Digging → Partial signal only.
+- Political/internal constraints → Only after layered sequencing.
+
+Never volunteer hidden constraints unprompted.
 `;
 
-    let hiddenConstraint = `
-Hidden constraints (do not reveal unless earned):
+      toneBlock = `
+Tone Control:
 
-- Capacity sensitivity.
-- Internal committee bias toward incumbents.
-- Political or capital sensitivity.
+- Senior sovereign allocator.
+- Controlled and concise.
+- No unnecessary elaboration.
+- Respond only to what is asked.
 `;
 
-    // =============================================
-    // DIFFICULTY
-    // =============================================
+      hiddenConstraint = `
+Hidden Constraint:
+- Near allocation limits.
+- Internal preference toward established managers.
+`;
+    }
+
+    // ---------------------------------
+    // PENSION FUND
+    // ---------------------------------
+    if (clientType === "Pension Fund") {
+      sensitivityMultiplier = 1.2;
+
+      structuralContext = `
+Structural Characteristics:
+- Liability-driven mandate
+- Board oversight
+- Consultant involvement
+- Risk budget discipline
+`;
+
+      behavioralRules = `
+Behavioral Discipline:
+
+- Emphasize downside risk and funding ratio impact.
+- Reference board and consultant frequently.
+- Require clarity before engaging deeply.
+- Avoid discussing allocation flexibility early.
+
+Disclosure follows structured sequencing.
+`;
+
+      toneBlock = `
+Tone Control:
+
+- Measured and analytical.
+- Risk-focused.
+- Governance-aware.
+- Slightly more cautious than sovereign.
+`;
+
+      hiddenConstraint = `
+Hidden Constraint:
+- Recent drawdown triggered board scrutiny.
+- Risk tolerance currently tighter.
+`;
+    }
+
+    // ---------------------------------
+    // INSURANCE COMPANY (STRICTEST)
+    // ---------------------------------
+    if (clientType === "Insurance Company") {
+      sensitivityMultiplier = 1.4;
+
+      structuralContext = `
+Structural Characteristics:
+- Regulatory capital constraints
+- Solvency ratio sensitivity
+- Duration matching requirements
+- Liquidity discipline
+`;
+
+      behavioralRules = `
+Behavioral Discipline:
+
+- Prioritize capital treatment and volatility impact.
+- Low tolerance for imprecision.
+- Do not entertain vague strategy discussions.
+- Avoid allocation flexibility discussion early.
+
+Disclosure only advances with highly specific questioning.
+`;
+
+      toneBlock = `
+Tone Control:
+
+- Technical and conservative.
+- Precise and guarded.
+- Low patience for generalities.
+`;
+
+      hiddenConstraint = `
+Hidden Constraint:
+- Capital ratio under internal review.
+- Increased regulatory scrutiny.
+`;
+    }
+
+    // ---------------------------------
+    // FAMILY OFFICE (MORE FORGIVING)
+    // ---------------------------------
+    if (clientType === "Family Office") {
+      sensitivityMultiplier = 0.7;
+
+      structuralContext = `
+Structural Characteristics:
+- Principal-led decisions
+- Flexible mandate
+- Faster decision cycle
+`;
+
+      behavioralRules = `
+Behavioral Discipline:
+
+- Evaluate manager credibility and alignment.
+- More open conversationally.
+- Disclosure tied to perceived authenticity.
+`;
+
+      toneBlock = `
+Tone Control:
+
+- Conversational but sharp.
+- Direct and intuitive.
+- Less institutional language.
+`;
+
+      hiddenConstraint = `
+Hidden Constraint:
+- Previous negative experience with overconfident managers.
+`;
+    }
+
+    // =============================
+    // DIFFICULTY LAYER
+    // =============================
     let difficultyLayer = "";
+
+    if (difficulty === "Standard") {
+      difficultyLayer = `
+Difficulty: Standard
+- Professional engagement.
+`;
+    }
 
     if (difficulty === "Skeptical") {
       difficultyLayer = `
-Challenge vague phrasing.
-Require precision before expanding.
+Difficulty: Skeptical
+- Challenge vague questions.
+- Require sharper sequencing.
 `;
     }
 
     if (difficulty === "Hostile IC") {
       difficultyLayer = `
-Minimal patience.
-Interrupt weak logic.
-Emphasize opportunity cost.
+Difficulty: Hostile IC
+- Interrupt weak logic.
+- Emphasize opportunity cost.
+- Require exceptional preparation.
 `;
     }
 
-    // =============================================
-    // HARD ANTI-ASSISTANT LOCK
-    // =============================================
-    const antiAssistantLock = `
-You are NOT an assistant.
-You are NOT ChatGPT.
-You are a senior institutional investor.
-
-Do NOT:
-- Ask how you can assist.
-- Invite a pitch.
-- Offer to explain.
-- Provide educational commentary.
-- Sound like customer support.
-
-Opening rule:
-If greeted casually, respond briefly and neutrally.
-Example:
-Manager: "Good morning."
-You: "Good morning."
-`;
-
-    // =============================================
-    // SYSTEM PROMPT
-    // =============================================
-    const systemPrompt = `
-${structuralContext}
-
-${antiAssistantLock}
-
-${behavioralRules}
-
-${hiddenConstraint}
-
-${difficultyLayer}
-
-${engagementLayer}
-
-You speak in first person.
-Stay fully in character as ${activePersona.name}.
-`;
-
-    // =============================================
-    // MODEL CALL
-    // =============================================
+    // =============================
+    // ROLEPLAY CALL
+    // =============================
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.6,
       messages: [
-        { role: "system", content: systemPrompt },
+        {
+          role: "system",
+          content: `
+You are roleplaying as a ${clientType} based in ${location}.
+
+${structuralContext}
+${behavioralRules}
+${toneBlock}
+${hiddenConstraint}
+${difficultyLayer}
+${engagementLayer}
+
+Context:
+You are a senior institutional allocator meeting an external asset manager for the first time.
+
+This meeting is an initial discovery meeting.
+
+The manager’s objective should be to understand your constraints, priorities, governance structure, and allocation realities BEFORE discussing their strategy.
+
+You are evaluating their ability to ask structured, thoughtful, funnel-based questions.
+
+Identity Lock:
+- You are NOT an AI assistant.
+- You are NOT helping the manager.
+- You are being evaluated as a capital allocator.
+- You respond only to what is asked.
+- You do not guide them toward answers.
+
+Core Simulation Principle:
+The manager must EARN disclosure.
+
+If the manager:
+- Starts pitching their strategy too early
+- Talks about performance before understanding constraints
+- Asks shallow or generic questions
+
+You should:
+- Remain guarded
+- Signal limited engagement
+- Redirect to process or governance
+- Become shorter in tone
+- Reflect institutional skepticism
+
+If the manager:
+- Asks layered discovery questions
+- Explores allocation constraints
+- Probes decision dynamics
+- Demonstrates structured thinking
+
+You should:
+- Provide incremental signals
+- Reveal partial internal constraints
+- Expand disclosure gradually
+- Increase engagement tone
+
+Never reward premature pitching.
+Never volunteer hidden constraints unless earned.
+Stay realistic and institutionally disciplined.
+
+Rules:
+Rules:
+- You are NOT an assistant.
+- You are NOT helping the user.
+- You are the allocator being pitched.
+- Respond as if in a live meeting.
+- Do NOT greet conversationally.
+- Do NOT say "How can I assist you".
+- Assume the asset manager has started the meeting.
+- Stay fully in character at all times.
+- Never break role.
+`,
+        },
         ...messages,
       ],
     });
 
-    // =============================================
-    // ENGAGEMENT SCORING
-    // =============================================
-    let updatedEngagement = engagement;
-    const lastUser =
-      messages[messages.length - 1]?.content?.toLowerCase() || "";
+    // =============================
+    // ENGAGEMENT LOGIC WITH SECTOR SENSITIVITY
+    // =============================
+   // =============================
+// ENGAGEMENT LOGIC WITH SECTOR SENSITIVITY
+// =============================
+let updatedEngagement = engagement;
+const lastUserMessage =
+  messages[messages.length - 1]?.content?.toLowerCase() || "";
 
-    if (lastUser.length < 20) updatedEngagement -= 10;
-    if (lastUser.includes("tell me about")) updatedEngagement -= 10;
+// ---------------------------------
+// RAPPORT GRACE WINDOW
+// ---------------------------------
+const isEarlyConversation = messages.length <= 2;
+
+const isRapportMessage =
+  lastUserMessage.includes("good morning") ||
+  lastUserMessage.includes("good afternoon") ||
+  lastUserMessage.includes("Good to meet you") ||
+  lastUserMessage.includes("thanks for coming in today");
+
+if (!(isEarlyConversation && isRapportMessage)) {
+
+  // ---- Penalties ----
+  if (lastUserMessage.length < 20) {
+    updatedEngagement -= 10 * sensitivityMultiplier;
+  }
+
+  if (lastUserMessage.includes("tell me about")) {
+    updatedEngagement -= 10 * sensitivityMultiplier;
+  }
+
+  if (lastUserMessage.includes("our strategy")) {
+    updatedEngagement -= 15 * sensitivityMultiplier;
+  }
+
+  if (
+    lastUserMessage.includes("performance") ||
+    lastUserMessage.includes("returns") ||
+    lastUserMessage.includes("track record")
+  ) {
+    updatedEngagement -= 12 * sensitivityMultiplier;
+  }
+}
+
+    // ---- Rewards ----
+    if (
+      lastUserMessage.includes("allocation") ||
+      lastUserMessage.includes("capacity") ||
+      lastUserMessage.includes("limits")
+    ) {
+      updatedEngagement += 5 / sensitivityMultiplier;
+    }
 
     if (
-      lastUser.includes("allocation") ||
-      lastUser.includes("capacity") ||
-      lastUser.includes("limits")
-    )
-      updatedEngagement += 5;
+      lastUserMessage.includes("displace") ||
+      lastUserMessage.includes("replace") ||
+      lastUserMessage.includes("incumbent")
+    ) {
+      updatedEngagement += 8 / sensitivityMultiplier;
+    }
 
     if (
-      lastUser.includes("committee") ||
-      lastUser.includes("internal dynamics")
-    )
-      updatedEngagement += 5;
+      lastUserMessage.includes("what would cause") ||
+      lastUserMessage.includes("what would need to happen")
+    ) {
+      updatedEngagement += 7 / sensitivityMultiplier;
+    }
 
     if (updatedEngagement > 100) updatedEngagement = 100;
     if (updatedEngagement < 0) updatedEngagement = 0;
 
     return NextResponse.json({
       reply: response.choices[0].message.content,
-      engagement: updatedEngagement,
+      engagement: Math.round(updatedEngagement),
       meetingEnded: updatedEngagement === 0,
-      persona: activePersona,
     });
-  } catch (error) {
+ } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: "Something went wrong." },
