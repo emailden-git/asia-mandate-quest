@@ -17,40 +17,99 @@ export async function POST(req: Request) {
       engagement = 100,
     } = body;
 
-    // =============================
-    // REVIEW MODE
-    // =============================
-    if (reviewMode) {
-      const evaluation = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `
-You are a senior buy-side sales coach.
+   // =============================
+// REVIEW MODE
+// =============================
+if (reviewMode) {
+  const evaluation = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "system",
+        content: `
+You are an institutional investment committee communication assessor.
 
-Deliver a structured coaching debrief.
+Analyze the conversation between a fund manager and a sovereign wealth fund allocator.
 
-Evaluate the asset manager’s questioning using the Funnel Questioning Model.
+SCORING CALIBRATION RULES:
 
-Provide:
-- Question breakdown
-- Funnel questioniung analysis
-- Depth analysis
-- Overall verdict
-- One structural improvement
+- 90–100: Elite institutional-level discovery. Deep constraint mapping, layered probing, no premature pitching.
+- 75–89: Strong discovery. Minor missed opportunities but clear depth and discipline.
+- 60–74: Competent professional discovery. Some depth, some missed probing, minor timing issues.
+- 45–59: Basic discovery. Limited depth and premature solutioning.
+- 30–44: Weak discovery. Surface-level questions and poor exploration.
+- Below 30: Fundamentally poor questioning with minimal discovery effort.
 
-Under 300 words.
+IMPORTANT:
+Do not over-penalize missed techniques.
+If the advisor demonstrates structured discovery and reflective listening, the score should not fall below 50.
+
+Evaluate questioning performance using this funnel framework:
+
+Funnel Question Types:
+- Broad
+- Reflective / Paraphrasing
+- Probing
+- Summarising / Clarifying
+- Testing
+- Follow-up Questions
+
+Return JSON in EXACTLY this structure:
+
+{
+  "overallScore": number,
+
+  "funnelAnalysis": {
+    "broadUsed": boolean,
+    "reflectiveUsed": boolean,
+    "probingUsed": boolean,
+    "summarisingUsed": boolean,
+    "testingUsed": boolean,
+    "followUpUsed": boolean,
+    "missedTypes": string[]
+  },
+
+  "followUpAssessment": {
+    "quality": string,
+    "depth": string,
+    "missedOpportunities": string
+  },
+
+  "constraintDiscovery": {
+    "quality": string,
+    "gaps": string
+  },
+
+  "needsDiscovery": {
+    "quality": string,
+    "gaps": string
+  },
+
+  "engagementAssessment": string,
+
+  "questioningQuality": string,
+
+  "suggestedQuestions": [
+    "Question 1",
+    "Question 2"
+  ]
+}
+
+Be analytical, specific, and constructive.
+Avoid generic praise.
+Highlight missed funnel progression explicitly.
+Return ONLY valid JSON.
 `,
-          },
-          ...messages,
-        ],
-      });
+      },
+      ...messages,
+    ],
+  });
 
-      return NextResponse.json({
-        reply: evaluation.choices[0].message.content,
-      });
-    }
+  return NextResponse.json({
+    reply: evaluation.choices[0].message.content,
+  });
+}
 
     // =============================
     // END MEETING AT 0
