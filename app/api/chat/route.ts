@@ -41,6 +41,14 @@ SCORING CALIBRATION RULES:
 - 30–44: Weak discovery. Surface-level questions and poor exploration.
 - Below 30: Fundamentally poor questioning with minimal discovery effort.
 
+Important distinction:
+
+- Reflective/paraphrasing is considered a valid form of follow-up.
+- Probing based on a prior answer is also a valid follow-up.
+- Do not penalize the advisor for lacking a separate "follow-up type" if they are clearly building on previous responses.
+
+Follow-up quality should be evaluated in the Follow-Up Assessment section, not in the funnel technique count.
+
 IMPORTANT:
 Do not over-penalize missed techniques.
 If the advisor demonstrates structured discovery and reflective listening, the score should not fall below 50.
@@ -66,7 +74,6 @@ Return JSON in EXACTLY this structure:
     "probingUsed": boolean,
     "summarisingUsed": boolean,
     "testingUsed": boolean,
-    "followUpUsed": boolean,
     "missedTypes": string[]
   },
 
