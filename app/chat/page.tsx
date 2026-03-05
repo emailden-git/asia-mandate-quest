@@ -106,24 +106,24 @@ export default function ChatPage() {
   missedFunnelTypes: parsed.funnelAnalysis?.missedTypes?.length
     ? parsed.funnelAnalysis.missedTypes.join(", ")
     : "None",
-  hiddenNeedAnalysis: parsed.hiddenNeedAnalysis
-    ? {
-        "Hidden Need": parsed.hiddenNeedAnalysis.need,
-        "Discovered": parsed.hiddenNeedAnalysis.discovered ? "✅ Yes" : "❌ No",
-        "Expanded Upon": parsed.hiddenNeedAnalysis.expandedUpon ? "✅ Yes" : "❌ No",
-        "Summarised": parsed.hiddenNeedAnalysis.summarised ? "✅ Yes" : "❌ No",
-        "Commentary": parsed.hiddenNeedAnalysis.commentary,
-      }
-    : null,
-  hiddenConstraintAnalysis: parsed.hiddenConstraintAnalysis
-    ? {
-        "Hidden Constraint": parsed.hiddenConstraintAnalysis.constraint,
-        "Discovered": parsed.hiddenConstraintAnalysis.discovered ? "✅ Yes" : "❌ No",
-        "Expanded Upon": parsed.hiddenConstraintAnalysis.expandedUpon ? "✅ Yes" : "❌ No",
-        "Summarised": parsed.hiddenConstraintAnalysis.summarised ? "✅ Yes" : "❌ No",
-        "Commentary": parsed.hiddenConstraintAnalysis.commentary,
-      }
-    : null,
+hiddenNeedAnalysis: parsed.hiddenNeedAnalysis
+  ? {
+      need: parsed.hiddenNeedAnalysis.need,
+      discovered: parsed.hiddenNeedAnalysis.discovered,
+      expandedUpon: parsed.hiddenNeedAnalysis.expandedUpon,
+      summarised: parsed.hiddenNeedAnalysis.summarised,
+      commentary: parsed.hiddenNeedAnalysis.commentary,
+    }
+  : null,
+hiddenConstraintAnalysis: parsed.hiddenConstraintAnalysis
+  ? {
+      constraint: parsed.hiddenConstraintAnalysis.constraint,
+      discovered: parsed.hiddenConstraintAnalysis.discovered,
+      expandedUpon: parsed.hiddenConstraintAnalysis.expandedUpon,
+      summarised: parsed.hiddenConstraintAnalysis.summarised,
+      commentary: parsed.hiddenConstraintAnalysis.commentary,
+    }
+  : null,
   overallQuestioningQuality: parsed.questioningQuality,
   questionsThatCouldHaveDeepenedConversation: parsed.suggestedQuestions,
 };

@@ -352,6 +352,8 @@ SCORING RULES (strict):
 - 76-90: Discovered both hidden need and constraint, good summarising and testing.
 - 91-100: Full funnel mastery, both hidden need and constraint discovered, expanded, and summarised.
 
+You MUST match the score to the bracket above. Before assigning a score, list which bracket the conversation falls into and why. If no hidden needs or constraints were discovered and fewer than 3 funnel types were used, the score CANNOT exceed 25. This is a hard rule with no exceptions.
+
 A single broad question with no follow-up should NEVER score above 20.
 
 MISSED FUNNEL TYPE PENALTY:
