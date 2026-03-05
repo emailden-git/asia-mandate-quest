@@ -75,13 +75,15 @@ export default function ChatPage() {
 
     try {
       const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages,
-          reviewMode: true,
-        }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    messages,
+    reviewMode: true,
+    clientType,
+    location,
+  }),
+});
 
       const data = await response.json();
 
@@ -90,7 +92,7 @@ export default function ChatPage() {
           typeof data.reply === "string"
             ? JSON.parse(data.reply)
             : data.reply;
-            const transformed = {
+           const transformed = {
   ...parsed,
   funnelQuestionAnalysis: parsed.funnelAnalysis
     ? {
@@ -104,6 +106,24 @@ export default function ChatPage() {
   missedFunnelTypes: parsed.funnelAnalysis?.missedTypes?.length
     ? parsed.funnelAnalysis.missedTypes.join(", ")
     : "None",
+  hiddenNeedAnalysis: parsed.hiddenNeedAnalysis
+    ? {
+        "Hidden Need": parsed.hiddenNeedAnalysis.need,
+        "Discovered": parsed.hiddenNeedAnalysis.discovered ? "✅ Yes" : "❌ No",
+        "Expanded Upon": parsed.hiddenNeedAnalysis.expandedUpon ? "✅ Yes" : "❌ No",
+        "Summarised": parsed.hiddenNeedAnalysis.summarised ? "✅ Yes" : "❌ No",
+        "Commentary": parsed.hiddenNeedAnalysis.commentary,
+      }
+    : null,
+  hiddenConstraintAnalysis: parsed.hiddenConstraintAnalysis
+    ? {
+        "Hidden Constraint": parsed.hiddenConstraintAnalysis.constraint,
+        "Discovered": parsed.hiddenConstraintAnalysis.discovered ? "✅ Yes" : "❌ No",
+        "Expanded Upon": parsed.hiddenConstraintAnalysis.expandedUpon ? "✅ Yes" : "❌ No",
+        "Summarised": parsed.hiddenConstraintAnalysis.summarised ? "✅ Yes" : "❌ No",
+        "Commentary": parsed.hiddenConstraintAnalysis.commentary,
+      }
+    : null,
   overallQuestioningQuality: parsed.questioningQuality,
   questionsThatCouldHaveDeepenedConversation: parsed.suggestedQuestions,
 };
@@ -303,6 +323,54 @@ export default function ChatPage() {
                 </p>
                 <p className="text-sm">
                   <strong>Gaps:</strong> {reviewData.needsDiscovery.gaps}
+                </p>
+              </div>
+            )}
+
+{/* HIDDEN NEED ANALYSIS */}
+            {reviewData.hiddenNeedAnalysis && (
+              <div className="border border-yellow-500 p-4">
+                <h3 className="text-xl font-bold mb-2 text-yellow-400">Hidden Need</h3>
+                <p className="text-sm mb-2">
+                  <strong>Need:</strong> {reviewData.hiddenNeedAnalysis.need}
+                </p>
+                <div className="flex gap-4 text-sm mb-2">
+                  <span>
+                    Discovered: {reviewData.hiddenNeedAnalysis.discovered ? "✅" : "❌"}
+                  </span>
+                  <span>
+                    Expanded Upon: {reviewData.hiddenNeedAnalysis.expandedUpon ? "✅" : "❌"}
+                  </span>
+                  <span>
+                    Summarised: {reviewData.hiddenNeedAnalysis.summarised ? "✅" : "❌"}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400">
+                  {reviewData.hiddenNeedAnalysis.commentary}
+                </p>
+              </div>
+            )}
+
+            {/* HIDDEN CONSTRAINT ANALYSIS */}
+            {reviewData.hiddenConstraintAnalysis && (
+              <div className="border border-red-500 p-4">
+                <h3 className="text-xl font-bold mb-2 text-red-400">Hidden Constraint</h3>
+                <p className="text-sm mb-2">
+                  <strong>Constraint:</strong> {reviewData.hiddenConstraintAnalysis.constraint}
+                </p>
+                <div className="flex gap-4 text-sm mb-2">
+                  <span>
+                    Discovered: {reviewData.hiddenConstraintAnalysis.discovered ? "✅" : "❌"}
+                  </span>
+                  <span>
+                    Expanded Upon: {reviewData.hiddenConstraintAnalysis.expandedUpon ? "✅" : "❌"}
+                  </span>
+                  <span>
+                    Summarised: {reviewData.hiddenConstraintAnalysis.summarised ? "✅" : "❌"}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400">
+                  {reviewData.hiddenConstraintAnalysis.commentary}
                 </p>
               </div>
             )}

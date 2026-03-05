@@ -18,176 +18,7 @@ export async function POST(req: Request) {
     } = body;
     // FIX: removed unused improveMode
 
-    // =============================
-    // REVIEW MODE
-    // =============================
-    if (reviewMode) {
-      const evaluation = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content: `
-You are an institutional investment committee communication assessor.
-
-Analyze the conversation between a fund manager and a sovereign wealth fund allocator.
-
-SCORING CALIBRATION RULES:
-
-- 90–100: Elite institutional-level discovery. Deep constraint mapping, layered probing, no premature pitching.
-- 75–89: Strong discovery. Minor missed opportunities but clear depth and discipline.
-- 60–74: Competent professional discovery. Some depth, some missed probing, minor timing issues.
-- 45–59: Basic discovery. Limited depth and premature solutioning.
-- 30–44: Weak discovery. Surface-level questions and poor exploration.
-- Below 30: Fundamentally poor questioning with minimal discovery effort.
-
-CONVERSATION DEPTH PENALTY:
-- Count the total number of substantive questions asked by the fund manager.
-- If fewer than 3 questions: automatic cap at 40, regardless of quality.
-- If 3–5 questions: automatic cap at 55, regardless of quality.
-- If 6–8 questions: automatic cap at 70.
-- If 9–12 questions: no cap, score on merit.
-- If 13+ questions with depth: eligible for 85+.
-
-MISSED FUNNEL TYPE PENALTY:
-- For each missed funnel type, deduct 5 points from the score.
-- If 3 or more funnel types are missed, the score cannot exceed 60.
-
-These caps override the quality-based score. A short conversation cannot score as "Strong discovery" no matter how good the individual questions were. Discovery requires breadth AND depth.
-
-Important distinction:
-
-- Reflective/Expanding is considered a valid form of follow-up.
-- Probing based on a prior answer is also a valid follow-up.
-- Do not penalize the advisor for lacking a separate "follow-up type" if they are clearly building on previous responses.
-
-Follow-up quality should be evaluated in the Follow-Up Assessment section, not in the funnel technique count.
-
-IMPORTANT:
-Do not over-penalize missed techniques.
-If the advisor demonstrates structured discovery and reflective listening, the score should not fall below 50.
-
-Evaluate questioning performance using this funnel framework:
-
-Funnel Question Types:
-- Broad
-- Reflective / Expanding
-- Probing
-- Summarising / Clarifying
-- Testing
-- Follow-up Questions
-
-Return JSON in EXACTLY this structure:
-
-{
-  "overallScore": number,
-
-  "funnelAnalysis": {
-    "broadUsed": boolean,
-    "reflectiveUsed": boolean,
-    "probingUsed": boolean,
-    "summarisingUsed": boolean,
-    "testingUsed": boolean,
-    "missedTypes": string[]
-  },
-
-  "followUpAssessment": {
-    "quality": string,
-    "depth": string,
-    "missedOpportunities": string
-  },
-
-  "constraintDiscovery": {
-    "quality": string,
-    "gaps": string
-  },
-
-  "needsDiscovery": {
-    "quality": string,
-    "gaps": string
-  },
-
-  "engagementAssessment": string,
-
-  "questioningQuality": string,
-
-  "suggestedQuestions": [
-    "Question 1",
-    "Question 2"
-  ]
-}
-
-Be analytical, specific, and constructive.
-Avoid generic praise.
-Highlight missed funnel progression explicitly.
-Return ONLY valid JSON.
-`,
-          },
-          ...messages,
-        ],
-      });
-
-      return NextResponse.json({
-        reply: evaluation.choices[0].message.content,
-      });
-    }
-
-    // =============================
-    // END MEETING AT 0
-    // =============================
-    if (engagement <= 0) {
-      return NextResponse.json({
-        reply:
-          "We'll conclude here. I'm not convinced this discussion is the best use of our time. Thank you.",
-        engagement: 0,
-        meetingEnded: true,
-      });
-    }
-
-    // =============================
-    // ENGAGEMENT TONE LAYER
-    // =============================
-    let engagementLayer = "";
-
-    // FIX: changed to else if
-    if (engagement <= 40 && engagement > 20) {
-      engagementLayer = `
-Engagement Status: Low
-- Responses become shorter.
-- Increased skepticism.
-- Subtle time pressure signals.
-- No increase in disclosure depth.
-`;
-    } else if (engagement <= 20 && engagement > 0) {
-      engagementLayer = `
-Engagement Status: Critical
-- Very brief responses.
-- Visible impatience.
-- Question the value of continuing.
-- Emphasize opportunity cost.
-- Do NOT expand answers.
-`;
-    }
-
-    // =============================
-    // OPENING BEHAVIOR (ALL CLIENT TYPES)
-    // =============================
-    // FIX: single source of truth for opening behavior — removed duplicate from SWF behavioralRules
-    const openingBehavior = `
-Opening Conduct:
-If greeted:
-- Respond briefly and naturally.
-- Do not add framing.
-- Do not invite discussion.
-- Do NOT add follow-up guidance.
-- Do NOT invite questions.
-- Do NOT frame the discussion.
-- Do NOT say you understand they have questions.
-- Keep it minimal and neutral.
-`;
-
-    // =============================
+  // =============================
     // CLIENT MODELING
     // =============================
     let structuralContext = "";
@@ -476,6 +307,219 @@ Hidden Constraint:
 - Previous negative experience with overconfident managers.
 `;
     }
+
+// =============================
+    // REVIEW MODE
+    // =============================
+    if (reviewMode) {
+      const evaluation = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+SCENARIO CONTEXT FOR REVIEW:
+The client type is: ${clientType}, based in ${location}.
+
+${hiddenNeeds}
+
+${hiddenConstraint}
+`,
+          },
+          {
+            role: "system",
+            content: `
+You are an institutional investment committee communication assessor.
+
+Analyze the conversation between a fund manager and a sovereign wealth fund allocator.
+
+SCORING CALIBRATION RULES:
+
+- 90–100: Elite institutional-level discovery. Deep constraint mapping, layered probing, no premature pitching.
+- 75–89: Strong discovery. Minor missed opportunities but clear depth and discipline.
+- 60–74: Competent professional discovery. Some depth, some missed probing, minor timing issues.
+- 45–59: Basic discovery. Limited depth and premature solutioning.
+- 30–44: Weak discovery. Surface-level questions and poor exploration.
+- Below 30: Fundamentally poor questioning with minimal discovery effort.
+
+SCORING RULES (strict):
+- 0-10: Only greetings or no meaningful questions asked.
+- 11-25: 1-2 basic questions with no follow-up or funnel progression.
+- 26-40: Some funnel progression but missed most hidden needs/constraints.
+- 41-60: Good funnel usage, partial discovery of hidden needs or constraints.
+- 61-75: Strong funnel progression, discovered hidden need OR constraint with follow-up.
+- 76-90: Discovered both hidden need and constraint, good summarising and testing.
+- 91-100: Full funnel mastery, both hidden need and constraint discovered, expanded, and summarised.
+
+A single broad question with no follow-up should NEVER score above 20.
+
+MISSED FUNNEL TYPE PENALTY:
+- For each missed funnel type, deduct 5 points from the score.
+- If 3 or more funnel types are missed, the score cannot exceed 55.
+
+These caps override the quality-based score. A short conversation cannot score as "Strong discovery" no matter how good the individual questions were. Discovery requires breadth AND depth.
+
+Important distinction:
+
+- Reflective/Expanding is considered a valid form of follow-up.
+- Probing based on a prior answer is also a valid follow-up.
+- Do not penalize the advisor for lacking a separate "follow-up type" if they are clearly building on previous responses.
+
+Follow-up quality should be evaluated in the Follow-Up Assessment section, not in the funnel technique count.
+
+IMPORTANT:
+Do not over-penalize missed techniques.
+If the advisor demonstrates structured discovery and reflective listening, the score should not fall below 50.
+
+Evaluate questioning performance using this funnel framework:
+
+Funnel Question Types:
+- Broad
+- Reflective / Expanding
+- Probing
+- Summarising / Clarifying
+- Testing
+- Follow-up Questions
+
+Return JSON in EXACTLY this structure:
+
+{
+  "overallScore": number,
+
+  "funnelAnalysis": {
+    "broadUsed": boolean,
+    "reflectiveUsed": boolean,
+    "probingUsed": boolean,
+    "summarisingUsed": boolean,
+    "testingUsed": boolean,
+    "missedTypes": string[]
+  },
+
+  "followUpAssessment": {
+    "quality": string,
+    "depth": string,
+    "missedOpportunities": string
+  },
+
+  "constraintDiscovery": {
+    "quality": string,
+    "gaps": string
+  },
+
+  "needsDiscovery": {
+    "quality": string,
+    "gaps": string
+  },
+
+  "hiddenNeedAnalysis": {
+    "need": "State what the hidden need was for this scenario",
+    "discovered": boolean,
+    "expandedUpon": boolean,
+    "summarised": boolean,
+    "commentary": "Brief explanation of how well or poorly the advisor uncovered, explored, and summarised the hidden need"
+  },
+
+  "hiddenConstraintAnalysis": {
+    "constraint": "State what the hidden constraint was for this scenario",
+    "discovered": boolean,
+    "expandedUpon": boolean,
+    "summarised": boolean,
+    "commentary": "Brief explanation of how well or poorly the advisor uncovered, explored, and summarised the hidden constraint"
+  },
+
+  "engagementAssessment": string,
+
+  "questioningQuality": string,
+
+  "suggestedQuestions": [
+    "Question 1",
+    "Question 2",
+    "Question 3",
+    "Question 4"
+  ]
+}
+
+HIDDEN NEED & CONSTRAINT ASSESSMENT:
+- You must state clearly what the hidden need and hidden constraint were for this scenario.
+- Assess whether the advisor discovered each one through their questioning.
+- Assess whether the advisor expanded upon each one by asking follow-up or probing questions.
+- Assess whether the advisor summarised each one back to the client to confirm understanding.
+- Be strict: if the advisor stumbled onto it by accident but didn't explore it, mark expandedUpon as false.
+- If the advisor never paraphrased or confirmed their understanding of it, mark summarised as false.
+
+Be analytical, specific, and constructive.
+Avoid generic praise.
+Highlight missed funnel progression explicitly.
+Return ONLY valid JSON.
+`,
+          },
+          ...messages,
+        ],
+      });
+
+      
+
+      return NextResponse.json({
+        reply: evaluation.choices[0].message.content,
+      });
+    }
+
+    // =============================
+    // END MEETING AT 0
+    // =============================
+    if (engagement <= 0) {
+      return NextResponse.json({
+        reply:
+          "We'll conclude here. I'm not convinced this discussion is the best use of our time. Thank you.",
+        engagement: 0,
+        meetingEnded: true,
+      });
+    }
+
+    // =============================
+    // ENGAGEMENT TONE LAYER
+    // =============================
+    let engagementLayer = "";
+
+    // FIX: changed to else if
+    if (engagement <= 40 && engagement > 20) {
+      engagementLayer = `
+Engagement Status: Low
+- Responses become shorter.
+- Increased skepticism.
+- Subtle time pressure signals.
+- No increase in disclosure depth.
+`;
+    } else if (engagement <= 20 && engagement > 0) {
+      engagementLayer = `
+Engagement Status: Critical
+- Very brief responses.
+- Visible impatience.
+- Question the value of continuing.
+- Emphasize opportunity cost.
+- Do NOT expand answers.
+`;
+    }
+
+    // =============================
+    // OPENING BEHAVIOR (ALL CLIENT TYPES)
+    // =============================
+    // FIX: single source of truth for opening behavior — removed duplicate from SWF behavioralRules
+    const openingBehavior = `
+Opening Conduct:
+If greeted:
+- Respond briefly and naturally.
+- Do not add framing.
+- Do not invite discussion.
+- Do NOT add follow-up guidance.
+- Do NOT invite questions.
+- Do NOT frame the discussion.
+- Do NOT say you understand they have questions.
+- Keep it minimal and neutral.
+`;
+
+  
 
     // =============================
     // DIFFICULTY LAYER
